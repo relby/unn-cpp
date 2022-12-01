@@ -1,28 +1,16 @@
 #pragma once
+#include <string>
 #include <vector>
 #include <optional>
 #include <set>
+#include <functional>
 
 enum TokenType {
-    Illegal = 0,
+    Invalid = 0,
 
-    // Operations
-    Plus,
-    Minus,
-    LeftParen,
-    RightParen,
-
-    // Multichar
     Integer,
-    Ident,
-    Function,
-
-    // Special
-    End,
-};
-
-std::set<std::string> functions = {
-    "sin",
+    Identifier,
+    Operation,
 };
 
 struct Token {
@@ -30,19 +18,29 @@ struct Token {
     std::string literal;
 };
 
+static const std::map<std::string, int> OPERATION_PRIORITY = {
+    { "(", 0 },
+    { ")", 1 },
+    { "+", 2 },
+    { "-", 2 },
+    { "/", 3 },
+    { "*", 3 },
+    { "^", 4 },
+};
+
+
 class Lexer {
 private:
     std::string input;
     std::string::iterator pos;
 
-    Token next();
+    std::optional<Token> next();
     std::optional<char> read_char();
     std::optional<char> peek_char();
     void skip_whitespace();
-    std::string read_until(bool (*func)(char));
+    std::string read_until(std::function<bool(char)> func);
 public:
     Lexer(const std::string& input);
-    bool is_input_valid();
     std::vector<Token> get_tokens();
 };
 
@@ -53,51 +51,40 @@ Lexer::Lexer(const std::string& input) {
 
 std::vector<Token> Lexer::get_tokens() {
     std::vector<Token> tokens;
-    Token token = this->next();
-    while (token.type != TokenType::End) {
-        tokens.push_back(token);
+    std::optional<Token> token = this->next();
+    while (token.has_value()) {
+        tokens.push_back(token.value());
         token = this->next();
     }
-    this->pos = this->input.begin();
     return tokens;
 }
 
-bool Lexer::is_input_valid() {
-    for (const Token& token : this->get_tokens()) {
-        if (token.type == TokenType::Illegal) return false;
-    }
-    return true;
-}
-
-Token Lexer::next() {
+std::optional<Token> Lexer::next() {
     this->skip_whitespace();
     std::optional maybe_next_char = this->read_char();
-    if (!maybe_next_char.has_value()) {
-        return (Token){
-            .type = TokenType::End,
-            .literal = "",
-        };
-    }
+    if (!maybe_next_char.has_value()) return std::nullopt;
     char next_char = maybe_next_char.value();
-    TokenType type = TokenType::Illegal;
+
+    TokenType type = TokenType::Invalid;
     std::string literal(1, next_char);
-    switch (next_char) {
-    case '+': type = TokenType::Plus; break;
-    case '-': type = TokenType::Minus; break;
-    case '(': type = TokenType::LeftParen; break;
-    case ')': type = TokenType::RightParen; break;
-    default:
-        if (std::isdigit(next_char)) {
-            literal += this->read_until([](char c) {return (bool)std::isdigit(c);});
-            type = TokenType::Integer;
-        } else if (std::isalpha(next_char)) {
-            literal += this->read_until([](char c) {return (bool)std::isalpha(c);});
-            type = functions.count(literal) ? TokenType::Function : TokenType::Ident;
-        }
+    if (OPERATION_PRIORITY.count(literal)) {
+        type = TokenType::Operation;
+        // If we had multiple char operations,
+        // we wouldn't be able to handle it here
+        // so keep in mind
     }
-    return (Token){
-        .type = type,
-        .literal = literal,
+    if (std::isdigit(next_char)) {
+        type = TokenType::Integer;
+        literal += this->read_until([](char c) {return (bool)std::isdigit(c);});
+    } else if (std::isalpha(next_char)) {
+        type = TokenType::Identifier;
+        literal += this->read_until([](char c) {return (bool)std::isalpha(c);});
+    }
+    return {
+        (Token){
+            .type = type,
+            .literal = literal,
+        }
     };
 }
 
@@ -105,12 +92,12 @@ std::optional<char> Lexer::read_char() {
     if (pos == input.end()) return std::nullopt;
     char ch = *pos;
     std::advance(pos, 1);
-    return ch;
+    return { ch };
 }
 
 std::optional<char> Lexer::peek_char() {
     if (pos == input.end()) return std::nullopt;
-    return *pos;
+    return { *pos };
 }
 
 void Lexer::skip_whitespace() {
@@ -119,7 +106,7 @@ void Lexer::skip_whitespace() {
     }
 }
 
-std::string Lexer::read_until(bool (*func)(char)) {
+std::string Lexer::read_until(std::function<bool(char)> func) {
     std::string out;
     while (this->peek_char().has_value() && func(this->peek_char().value())) {
         out.push_back(this->read_char().value());
