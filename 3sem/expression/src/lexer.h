@@ -26,6 +26,8 @@ static const std::map<std::string, int> OPERATION_PRIORITY = {
     { "/", 3 },
     { "*", 3 },
     { "^", 4 },
+    { "sin", 5 },
+    { "cos", 5 },
 };
 
 
@@ -72,13 +74,13 @@ std::optional<Token> Lexer::next() {
         // If we had multiple char operations,
         // we wouldn't be able to handle it here
         // so keep in mind
-    }
-    if (std::isdigit(next_char)) {
+    } else if (std::isdigit(next_char)) {
+        // TODO: It still works for the case with multiple dots in a number.
+        literal += this->read_until([](char c) {return (bool)std::isdigit(c) || c == '.';});
         type = TokenType::Integer;
-        literal += this->read_until([](char c) {return (bool)std::isdigit(c);});
     } else if (std::isalpha(next_char)) {
-        type = TokenType::Identifier;
         literal += this->read_until([](char c) {return (bool)std::isalpha(c);});
+        type = OPERATION_PRIORITY.count(literal) ? TokenType::Operation : TokenType::Identifier;
     }
     return {
         (Token){

@@ -26,8 +26,8 @@ public:
     Expression(const std::string& input);
     std::vector<Token> get_postfix_tokens();
     std::string get_postfix();
-    std::map<std::string, std::optional<int>> get_ident_values();
-    int calculate(const std::map<std::string, int>& values = {});
+    std::map<std::string, std::optional<double>> get_ident_values();
+    double calculate(const std::map<std::string, double>& values = {});
 };
 
 Expression::Expression(const std::string& input)
@@ -85,7 +85,7 @@ std::string Expression::get_postfix() {
     return join(out, " ");
 }
 
-int Expression::calculate(const std::map<std::string, int>& values) {
+double Expression::calculate(const std::map<std::string, double>& values) {
     for (const std::string& ident : this->identifiers) {
         if (!values.count(ident)) {
             throw std::invalid_argument(
@@ -93,27 +93,35 @@ int Expression::calculate(const std::map<std::string, int>& values) {
             );
         }
     }
-    TStack<int> stack;
+    TStack<double> stack;
     for (const Token& token : this->get_postfix_tokens()) {
         switch (token.type) {
         case TokenType::Operation: {
-            int right_operand = stack.pop();
-            int left_operand = stack.pop();
-            if (token.literal == "+") {
-                stack.push(left_operand + right_operand);
-            } else if (token.literal == "-") {
-                stack.push(left_operand - right_operand);
-            } else if (token.literal == "*") {
-                stack.push(left_operand * right_operand);
-            } else if (token.literal == "/") {
-                stack.push(left_operand / right_operand);
-            } else if (token.literal == "^") {
-                stack.push(std::pow(left_operand, right_operand));
+            if (token.literal == "sin") {
+                double operand = stack.pop();
+                stack.push(std::sin(operand));
+            } else if (token.literal == "cos") {
+                double operand = stack.pop();
+                stack.push(std::sin(operand));
+            } else {
+                double right_operand = stack.pop();
+                double left_operand = stack.pop();
+                if (token.literal == "+") {
+                    stack.push(left_operand + right_operand);
+                } else if (token.literal == "-") {
+                    stack.push(left_operand - right_operand);
+                } else if (token.literal == "*") {
+                    stack.push(left_operand * right_operand);
+                } else if (token.literal == "/") {
+                    stack.push(left_operand / right_operand);
+                } else if (token.literal == "^") {
+                    stack.push(std::pow(left_operand, right_operand));
+                }
             }
             break;
         }
         case TokenType::Integer: {
-            stack.push(std::stoi(token.literal));
+            stack.push(std::stod(token.literal));
             break;
         }
         case TokenType::Identifier: {
