@@ -102,7 +102,7 @@ double Expression::calculate(const std::map<std::string, double>& values) {
                 stack.push(std::sin(operand));
             } else if (token.literal == "cos") {
                 double operand = stack.pop();
-                stack.push(std::sin(operand));
+                stack.push(std::cos(operand));
             } else if (token.literal == "neg") {
                 double operand = stack.pop();
                 stack.push(-operand);
