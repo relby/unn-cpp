@@ -9,7 +9,7 @@
 #include "tstack.h"
 #include "lexer.h"
 
-std::string join(std::vector<std::string> const &strings, std::string delim)
+std::string join(const std::vector<std::string> &strings, const std::string& delim)
 {
     std::stringstream ss;
     std::copy(strings.begin(), strings.end(),
@@ -24,10 +24,16 @@ private:
     std::set<std::string> identifiers;
 public:
     Expression(const std::string& input);
-    std::vector<Token> get_postfix_tokens();
+
+    // Getters
+    const std::vector<Token>& get_infix_tokens();
+    std::string get_infix();
+    const std::vector<Token>& get_postfix_tokens();
     std::string get_postfix();
-    std::map<std::string, std::optional<double>> get_ident_values();
+    const std::set<std::string>& get_identifiers();
+
     double calculate(const std::map<std::string, double>& values = {});
+    bool is_parens_valid();
 };
 
 Expression::Expression(const std::string& input)
@@ -37,7 +43,20 @@ Expression::Expression(const std::string& input)
 {
 }
 
-std::vector<Token> Expression::get_postfix_tokens() {
+
+const std::vector<Token>& Expression::get_infix_tokens() {
+    return this->infix_tokens;
+}
+
+std::string Expression::get_infix() {
+    std::string out;
+    for (const Token& token : this->get_infix_tokens()) {
+        out += token.literal;
+    }
+    return out;
+}
+
+const std::vector<Token>& Expression::get_postfix_tokens() {
     if (this->postfix_tokens.has_value()) {
         return this->postfix_tokens.value();
     }
@@ -83,6 +102,10 @@ std::string Expression::get_postfix() {
         out.push_back(token.literal);
     }
     return join(out, " ");
+}
+
+const std::set<std::string>& Expression::get_identifiers() {
+    return this->identifiers;
 }
 
 double Expression::calculate(const std::map<std::string, double>& values) {
@@ -134,5 +157,20 @@ double Expression::calculate(const std::map<std::string, double>& values) {
         }
     }
     return stack.pop();
+}
+
+bool Expression::is_parens_valid() {
+    int count = 0;
+    for (const Token& token : this->get_infix_tokens()) {
+        if (token.literal == "(") {
+            count += 1;
+        } else if (token.literal == ")") {
+            count -= 1;
+        }
+        if (count < 0) {
+            return false;
+        }
+    }
+    return true;
 }
 
