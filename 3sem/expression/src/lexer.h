@@ -8,7 +8,7 @@
 enum TokenType {
     Invalid = 0,
 
-    Integer,
+    Number,
     Identifier,
     Operation,
 };
@@ -28,6 +28,7 @@ static const std::map<std::string, int> OPERATION_PRIORITY = {
     { "^", 4 },
     { "sin", 5 },
     { "cos", 5 },
+    { "neg", 5 },
 };
 
 
@@ -77,7 +78,7 @@ std::optional<Token> Lexer::next() {
     } else if (std::isdigit(next_char)) {
         // TODO: It still works for the case with multiple dots in a number.
         literal += this->read_until([](char c) {return (bool)std::isdigit(c) || c == '.';});
-        type = TokenType::Integer;
+        type = TokenType::Number;
     } else if (std::isalpha(next_char)) {
         literal += this->read_until([](char c) {return (bool)std::isalpha(c);});
         type = OPERATION_PRIORITY.count(literal) ? TokenType::Operation : TokenType::Identifier;
@@ -115,3 +116,4 @@ std::string Lexer::read_until(std::function<bool(char)> func) {
     }
     return out;
 }
+

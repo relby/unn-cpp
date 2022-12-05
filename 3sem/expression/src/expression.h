@@ -64,7 +64,7 @@ std::vector<Token> Expression::get_postfix_tokens() {
                 }
             }
             stack.push(token);
-        } else if (token.type == TokenType::Integer) {
+        } else if (token.type == TokenType::Number) {
             this->postfix_tokens.value().push_back(token);
         } else if (token.type == TokenType::Identifier) {
             this->identifiers.insert(token.literal);
@@ -103,6 +103,9 @@ double Expression::calculate(const std::map<std::string, double>& values) {
             } else if (token.literal == "cos") {
                 double operand = stack.pop();
                 stack.push(std::sin(operand));
+            } else if (token.literal == "neg") {
+                double operand = stack.pop();
+                stack.push(-operand);
             } else {
                 double right_operand = stack.pop();
                 double left_operand = stack.pop();
@@ -120,7 +123,7 @@ double Expression::calculate(const std::map<std::string, double>& values) {
             }
             break;
         }
-        case TokenType::Integer: {
+        case TokenType::Number: {
             stack.push(std::stod(token.literal));
             break;
         }
@@ -132,3 +135,4 @@ double Expression::calculate(const std::map<std::string, double>& values) {
     }
     return stack.pop();
 }
+
