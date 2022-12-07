@@ -8,7 +8,7 @@
 #include <cmath>
 #include <iostream>
 #include <exception>
-#include "tstack.h"
+#include "stack.h"
 #include "lexer.h"
 
 std::string join(const std::vector<std::string> &strings, const std::string& delim)
@@ -55,7 +55,7 @@ Expression::Expression(const std::string& input)
     if (!ExpressionValidator::is_parens_valid(*this)) {
         throw std::logic_error("Parens are not valid");
     }
-    if (!ExpressionValidator::has_invalid_tokens(*this)) {
+    if (ExpressionValidator::has_invalid_tokens(*this)) {
         throw std::logic_error("Expression has invalid tokens");
     }
 }

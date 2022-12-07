@@ -1,5 +1,4 @@
 #include <iostream>
-#include "tstack.h"
 #include "expression.h"
 
 int main() {
