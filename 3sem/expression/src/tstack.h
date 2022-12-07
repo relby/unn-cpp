@@ -7,7 +7,7 @@
 const size_t EMPTY_STACK_CAP = 4;
 
 template<typename T>
-class TStack {
+class Stack {
 private:
     T* data;
     size_t size;
@@ -16,10 +16,10 @@ private:
     void check_for_resize();
 
 public:
-    TStack(size_t cap = EMPTY_STACK_CAP);
-    TStack(const TStack<T>& stack);
-    TStack(TStack<T>&& stack);
-    ~TStack();
+    Stack(size_t cap = EMPTY_STACK_CAP);
+    Stack(const Stack<T>& stack);
+    Stack(Stack<T>&& stack);
+    ~Stack();
 
     void push(const T& value);
     const T& pop();
@@ -30,7 +30,7 @@ public:
 };
 
 template<typename T>
-void TStack<T>::check_for_resize() {
+void Stack<T>::check_for_resize() {
     if (this->size == this->cap) {
         T* new_data = new T[this->cap * 2];
         std::copy(this->data, this->data + this->cap, new_data);
@@ -41,7 +41,7 @@ void TStack<T>::check_for_resize() {
 }
 
 template<typename T>
-TStack<T>::TStack(size_t cap)
+Stack<T>::Stack(size_t cap)
     : size(0)
     , cap(cap)
 {
@@ -49,7 +49,7 @@ TStack<T>::TStack(size_t cap)
 }
 
 template<typename T>
-TStack<T>::TStack(const TStack<T>& stack) {
+Stack<T>::Stack(const Stack<T>& stack) {
     if (this->cap != stack.cap) {
         this->cap = stack.cap;
         this->data = new T[this->cap];
@@ -59,7 +59,7 @@ TStack<T>::TStack(const TStack<T>& stack) {
 }
 
 template<typename T>
-TStack<T>::TStack(TStack<T>&& stack)
+Stack<T>::Stack(Stack<T>&& stack)
     : size(stack.size)
     , cap(stack.cap)
     , data(stack.data)
@@ -68,18 +68,18 @@ TStack<T>::TStack(TStack<T>&& stack)
 }
 
 template<typename T>
-TStack<T>::~TStack() {
+Stack<T>::~Stack() {
     delete[] this->data;
 }
 
 template<typename T>
-void TStack<T>::push(const T& value) {
+void Stack<T>::push(const T& value) {
     this->check_for_resize();
     this->data[size++] = value;
 }
 
 template<typename T>
-const T& TStack<T>::pop() {
+const T& Stack<T>::pop() {
     if (this->is_empty()) {
         throw std::length_error("Stack is empty");
     }
@@ -87,12 +87,12 @@ const T& TStack<T>::pop() {
 }
 
 template<typename T>
-bool TStack<T>::is_empty() const {
+bool Stack<T>::is_empty() const {
     return this->size == 0;
 }
 
 template<typename T>
-const T& TStack<T>::top() const {
+const T& Stack<T>::top() const {
     if (this->is_empty()) {
         throw std::length_error("Stack is empty");
     }
@@ -100,11 +100,11 @@ const T& TStack<T>::top() const {
 }
 
 template<typename T>
-size_t TStack<T>::get_size() const {
+size_t Stack<T>::get_size() const {
     return this->size;
 }
 
 template<typename T>
-size_t TStack<T>::get_cap() const {
+size_t Stack<T>::get_cap() const {
     return this->cap;
 }

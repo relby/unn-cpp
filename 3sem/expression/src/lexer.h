@@ -3,6 +3,7 @@
 #include <vector>
 #include <optional>
 #include <set>
+#include <map>
 #include <functional>
 
 enum TokenType {

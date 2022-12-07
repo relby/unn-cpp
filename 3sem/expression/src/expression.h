@@ -26,14 +26,13 @@ public:
     Expression(const std::string& input);
 
     // Getters
-    const std::vector<Token>& get_infix_tokens();
-    std::string get_infix();
+    const std::vector<Token>& get_infix_tokens() const;
+    std::string get_infix() const;
     const std::vector<Token>& get_postfix_tokens();
     std::string get_postfix();
-    const std::set<std::string>& get_identifiers();
+    const std::set<std::string>& get_identifiers() const;
 
     double calculate(const std::map<std::string, double>& values = {});
-    bool is_parens_valid();
 };
 
 Expression::Expression(const std::string& input)
@@ -44,11 +43,11 @@ Expression::Expression(const std::string& input)
 }
 
 
-const std::vector<Token>& Expression::get_infix_tokens() {
+const std::vector<Token>& Expression::get_infix_tokens() const {
     return this->infix_tokens;
 }
 
-std::string Expression::get_infix() {
+std::string Expression::get_infix() const {
     std::string out;
     for (const Token& token : this->get_infix_tokens()) {
         out += token.literal;
@@ -61,7 +60,7 @@ const std::vector<Token>& Expression::get_postfix_tokens() {
         return this->postfix_tokens.value();
     }
     this->postfix_tokens = std::make_optional<std::vector<Token>>({});
-    TStack<Token> stack;
+    Stack<Token> stack;
     for (const Token& token : this->infix_tokens) {
         // TODO: consider introducing separate TokenType for left and right paren
         if (token.literal == "(") {
@@ -104,7 +103,7 @@ std::string Expression::get_postfix() {
     return join(out, " ");
 }
 
-const std::set<std::string>& Expression::get_identifiers() {
+const std::set<std::string>& Expression::get_identifiers() const {
     return this->identifiers;
 }
 
@@ -116,7 +115,7 @@ double Expression::calculate(const std::map<std::string, double>& values) {
             );
         }
     }
-    TStack<double> stack;
+    Stack<double> stack;
     for (const Token& token : this->get_postfix_tokens()) {
         switch (token.type) {
         case TokenType::Operation: {
@@ -157,20 +156,5 @@ double Expression::calculate(const std::map<std::string, double>& values) {
         }
     }
     return stack.pop();
-}
-
-bool Expression::is_parens_valid() {
-    int count = 0;
-    for (const Token& token : this->get_infix_tokens()) {
-        if (token.literal == "(") {
-            count += 1;
-        } else if (token.literal == ")") {
-            count -= 1;
-        }
-        if (count < 0) {
-            return false;
-        }
-    }
-    return true;
 }
 
