@@ -1,4 +1,5 @@
 #pragma once
+#include <stdexcept>
 #include <string>
 #include <map>
 #include <sstream>
@@ -6,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <exception>
 #include "tstack.h"
 #include "lexer.h"
 
@@ -17,6 +19,9 @@ std::string join(const std::vector<std::string> &strings, const std::string& del
     return ss.str();
 }
 
+// TODO: Move implementations to separate files
+
+// Declaration
 class Expression {
 private:
     std::vector<Token> infix_tokens;
@@ -35,11 +40,24 @@ public:
     double calculate(const std::map<std::string, double>& values = {});
 };
 
+class ExpressionValidator {
+public:
+    static bool is_parens_valid(const Expression& expression);
+    static bool has_invalid_tokens(const Expression& expression);
+};
+
+// Implementation
 Expression::Expression(const std::string& input)
     : infix_tokens(Lexer(input).get_tokens())
     , postfix_tokens(std::nullopt)
     , identifiers({})
 {
+    if (!ExpressionValidator::is_parens_valid(*this)) {
+        throw std::logic_error("Parens are not valid");
+    }
+    if (!ExpressionValidator::has_invalid_tokens(*this)) {
+        throw std::logic_error("Expression has invalid tokens");
+    }
 }
 
 
@@ -138,6 +156,9 @@ double Expression::calculate(const std::map<std::string, double>& values) {
                 } else if (token.literal == "*") {
                     stack.push(left_operand * right_operand);
                 } else if (token.literal == "/") {
+                    if (right_operand == 0) {
+                        throw std::logic_error("Can't divide by zero");
+                    }
                     stack.push(left_operand / right_operand);
                 } else if (token.literal == "^") {
                     stack.push(std::pow(left_operand, right_operand));
@@ -158,3 +179,27 @@ double Expression::calculate(const std::map<std::string, double>& values) {
     return stack.pop();
 }
 
+
+bool ExpressionValidator::is_parens_valid(const Expression& expression) {
+    int count = 0;
+    for (const Token& token : expression.get_infix_tokens()) {
+        if (token.literal == "(") {
+            count += 1;
+        } else if (token.literal == ")") {
+            count -= 1;
+        }
+        if (count < 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ExpressionValidator::has_invalid_tokens(const Expression& expression) {
+    for (const Token& token : expression.get_infix_tokens()) {
+        if (token.type == TokenType::Invalid) {
+            return true;
+        }
+    }
+    return false;
+}
