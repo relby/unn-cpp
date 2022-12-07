@@ -1,10 +1,11 @@
 #pragma once
 #include <algorithm>
 #include <cstdlib>
+#include <initializer_list>
 #include <utility>
 #include <stdexcept>
 
-const size_t EMPTY_STACK_CAP = 4;
+const size_t EMPTY_STACK_CAP = 10;
 
 template<typename T>
 class Stack {
@@ -19,6 +20,7 @@ public:
     Stack(size_t cap = EMPTY_STACK_CAP);
     Stack(const Stack<T>& stack);
     Stack(Stack<T>&& stack);
+    Stack(std::initializer_list<T> list);
     ~Stack();
 
     void push(const T& value);
@@ -65,6 +67,12 @@ Stack<T>::Stack(Stack<T>&& stack)
     , data(stack.data)
 {
     stack.data = nullptr;
+}
+template<typename T>
+Stack<T>::Stack(std::initializer_list<T> list) : Stack(list.size()) {
+    for (const T& elem : list) {
+        this->push(elem);
+    }
 }
 
 template<typename T>
