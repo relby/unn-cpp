@@ -38,6 +38,8 @@ public:
     const std::set<std::string>& get_identifiers() const;
 
     double calculate(const std::map<std::string, double>& values = {});
+
+    bool is_valid() const;
 };
 
 class ExpressionValidator {
@@ -52,12 +54,6 @@ Expression::Expression(const std::string& input)
     , postfix_tokens(std::nullopt)
     , identifiers({})
 {
-    if (!ExpressionValidator::is_parens_valid(*this)) {
-        throw std::logic_error("Parens are not valid");
-    }
-    if (ExpressionValidator::has_invalid_tokens(*this)) {
-        throw std::logic_error("Expression has invalid tokens");
-    }
 }
 
 
@@ -179,6 +175,10 @@ double Expression::calculate(const std::map<std::string, double>& values) {
     return stack.pop();
 }
 
+bool Expression::is_valid() const {
+    return ExpressionValidator::is_parens_valid(*this) &&
+        !ExpressionValidator::has_invalid_tokens(*this);
+}
 
 bool ExpressionValidator::is_parens_valid(const Expression& expression) {
     int count = 0;
