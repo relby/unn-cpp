@@ -1,6 +1,5 @@
-#include "stack.h"
-
 #include <gtest.h>
+#include "stack.h"
 
 TEST(Stack, cant_pop_from_empty_stack) {
     Stack<int> s;

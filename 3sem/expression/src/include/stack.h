@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STACK_H
+#define STACK_H
 #include <algorithm>
 #include <cstdlib>
 #include <initializer_list>
@@ -116,3 +117,4 @@ template<typename T>
 size_t Stack<T>::get_cap() const {
     return this->cap;
 }
+#endif // STACK_H

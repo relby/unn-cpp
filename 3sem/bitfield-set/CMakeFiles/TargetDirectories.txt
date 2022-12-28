@@ -1,0 +1,14 @@
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/CMakeFiles/edit_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/CMakeFiles/rebuild_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/src/CMakeFiles/set.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/src/CMakeFiles/edit_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/src/CMakeFiles/rebuild_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/samples/CMakeFiles/sample_prime_numbers.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/samples/CMakeFiles/edit_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/samples/CMakeFiles/rebuild_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/gtest/CMakeFiles/gtest.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/gtest/CMakeFiles/edit_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/gtest/CMakeFiles/rebuild_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/test/CMakeFiles/test_set.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/test/CMakeFiles/edit_cache.dir
+/home/relby/prog/cpp/mp2-lab1-bitfield-master/test/CMakeFiles/rebuild_cache.dir

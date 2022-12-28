@@ -1,15 +1,5 @@
-#pragma once
-#include <stdexcept>
-#include <string>
-#include <map>
-#include <sstream>
-#include <iterator>
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <exception>
-#include "stack.h"
-#include "lexer.h"
+#include "expression.h"
+
 
 std::string join(const std::vector<std::string> &strings, const std::string& delim)
 {
@@ -19,41 +9,15 @@ std::string join(const std::vector<std::string> &strings, const std::string& del
     return ss.str();
 }
 
-// TODO: Move implementations to separate files
-
-// Declaration
-class Expression {
-private:
-    std::vector<Token> infix_tokens;
-    std::optional<std::vector<Token>> postfix_tokens;
-    std::set<std::string> identifiers;
-public:
-    Expression(const std::string& input);
-
-    // Getters
-    const std::vector<Token>& get_infix_tokens() const;
-    std::string get_infix() const;
-    const std::vector<Token>& get_postfix_tokens();
-    std::string get_postfix();
-    const std::set<std::string>& get_identifiers() const;
-
-    double calculate(const std::map<std::string, double>& values = {});
-
-    bool is_valid() const;
-};
-
-class ExpressionValidator {
-public:
-    static bool is_parens_valid(const Expression& expression);
-    static bool has_invalid_tokens(const Expression& expression);
-};
-
-// Implementation
 Expression::Expression(const std::string& input)
-    : infix_tokens(Lexer(input).get_tokens())
-    , postfix_tokens(std::nullopt)
+    : postfix_tokens(std::nullopt)
     , identifiers({})
 {
+    std::vector<Token> tokens = Lexer(input).get_tokens();
+    if (!ExpressionValidator::is_valid(tokens)) {
+        throw std::invalid_argument("Expression is not valid");
+    }
+    this->infix_tokens = tokens;
 }
 
 
@@ -77,30 +41,41 @@ const std::vector<Token>& Expression::get_postfix_tokens() {
     Stack<Token> stack;
     for (const Token& token : this->infix_tokens) {
         // TODO: consider introducing separate TokenType for left and right paren
-        if (token.literal == "(") {
-            stack.push(token);
-        } else if (token.literal == ")") {
-            Token item = stack.pop();
-            while (item.literal != "(") {
-                this->postfix_tokens.value().push_back(item);
-                item = stack.pop();
+        switch (token.type) {
+            case TokenType::LeftParen: {
+                stack.push(token);
+                break;
             }
-        } else if (token.type == TokenType::Operation) {
-            while (!stack.is_empty()) {
+            case TokenType::RightParen: {
                 Token item = stack.pop();
-                if (OPERATION_PRIORITY.at(token.literal) <= OPERATION_PRIORITY.at(item.literal)) {
+                while (item.literal != "(") {
                     this->postfix_tokens.value().push_back(item);
-                } else {
-                    stack.push(item);
-                    break;
+                    item = stack.pop();
                 }
+                break;
             }
-            stack.push(token);
-        } else if (token.type == TokenType::Number) {
-            this->postfix_tokens.value().push_back(token);
-        } else if (token.type == TokenType::Identifier) {
-            this->identifiers.insert(token.literal);
-            this->postfix_tokens.value().push_back(token);
+            case TokenType::Operation: {
+                while (!stack.is_empty()) {
+                    Token item = stack.pop();
+                    if (token.priority <= item.priority) {
+                        this->postfix_tokens.value().push_back(item);
+                    } else {
+                        stack.push(item);
+                        break;
+                    }
+                }
+                stack.push(token);
+                break;
+            }
+            case TokenType::Number: {
+                this->postfix_tokens.value().push_back(token);
+                break;
+            }
+            case TokenType::Identifier: {
+                this->identifiers.insert(token.literal);
+                this->postfix_tokens.value().push_back(token);
+                break;
+            }
         }
     }
     while(!stack.is_empty()) {
@@ -173,33 +148,4 @@ double Expression::calculate(const std::map<std::string, double>& values) {
         }
     }
     return stack.pop();
-}
-
-bool Expression::is_valid() const {
-    return ExpressionValidator::is_parens_valid(*this) &&
-        !ExpressionValidator::has_invalid_tokens(*this);
-}
-
-bool ExpressionValidator::is_parens_valid(const Expression& expression) {
-    int count = 0;
-    for (const Token& token : expression.get_infix_tokens()) {
-        if (token.literal == "(") {
-            count += 1;
-        } else if (token.literal == ")") {
-            count -= 1;
-        }
-        if (count < 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool ExpressionValidator::has_invalid_tokens(const Expression& expression) {
-    for (const Token& token : expression.get_infix_tokens()) {
-        if (token.type == TokenType::Invalid) {
-            return true;
-        }
-    }
-    return false;
 }

@@ -1,52 +1,4 @@
-#pragma once
-#include <string>
-#include <vector>
-#include <optional>
-#include <set>
-#include <map>
-#include <functional>
-
-enum TokenType {
-    Invalid = 0,
-
-    Number,
-    Identifier,
-    Operation,
-};
-
-struct Token {
-    TokenType type;
-    std::string literal;
-};
-
-static const std::map<std::string, int> OPERATION_PRIORITY = {
-    { "(", 0 },
-    { ")", 1 },
-    { "+", 2 },
-    { "-", 2 },
-    { "/", 3 },
-    { "*", 3 },
-    { "^", 4 },
-    { "sin", 5 },
-    { "cos", 5 },
-    { "neg", 5 },
-};
-
-
-class Lexer {
-private:
-    std::string input;
-    std::string::iterator pos;
-
-    std::optional<Token> next();
-    std::optional<char> read_char();
-    std::optional<char> peek_char();
-    void skip_whitespace();
-    std::string read_until(std::function<bool(char)> func);
-public:
-    Lexer(const std::string& input);
-    std::vector<Token> get_tokens();
-};
+#include "lexer.h"
 
 Lexer::Lexer(const std::string& input) {
     this->input = input;
@@ -71,23 +23,34 @@ std::optional<Token> Lexer::next() {
 
     TokenType type = TokenType::Invalid;
     std::string literal(1, next_char);
-    if (OPERATION_PRIORITY.count(literal)) {
+    std::optional<int> priority = std::nullopt;
+    if (literal == "(") {
+        type = TokenType::LeftParen;
+        priority = 0;
+    } else if (literal == ")") {
+        type = TokenType::RightParen;
+        priority = 1;
+    } else if (OPERATION_PRIORITY.count(literal)) {
         type = TokenType::Operation;
-        // If we had multiple char operations,
-        // we wouldn't be able to handle it here
-        // so keep in mind
+        priority = OPERATION_PRIORITY.find(literal)->second;
     } else if (std::isdigit(next_char)) {
         // TODO: It still works for the case with multiple dots in a number.
         literal += this->read_until([](char c) {return (bool)std::isdigit(c) || c == '.';});
         type = TokenType::Number;
     } else if (std::isalpha(next_char)) {
         literal += this->read_until([](char c) {return (bool)std::isalpha(c);});
-        type = OPERATION_PRIORITY.count(literal) ? TokenType::Operation : TokenType::Identifier;
+        if (OPERATION_PRIORITY.count(literal)) {
+            type = TokenType::Operation;
+            priority = OPERATION_PRIORITY.find(literal)->second;
+        } else {
+            type = TokenType::Identifier;
+        }
     }
     return {
         (Token){
             .type = type,
             .literal = literal,
+            .priority = priority,
         }
     };
 }
@@ -117,4 +80,3 @@ std::string Lexer::read_until(std::function<bool(char)> func) {
     }
     return out;
 }
-
